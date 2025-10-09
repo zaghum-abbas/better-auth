@@ -18,6 +18,8 @@ import { SocialProvider } from "@/types";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import TwoFactorStep from "../TwoFactorStep";
+import { Eye, EyeOff } from "lucide-react";
 
 const initialValues: LoginFormValues = {
   email: "",
@@ -25,15 +27,19 @@ const initialValues: LoginFormValues = {
 };
 
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(
     null
   );
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (
     values: LoginFormValues,
     { setSubmitting, resetForm }: any
   ) => {
+    setIsSubmitting(true);
     try {
       await authClient.signIn.email(
         {
@@ -41,16 +47,24 @@ export default function LoginForm() {
           password: values.password,
         },
         {
-          onSuccess: () => {
-            toast.success("Login successful!");
-            resetForm();
-            router.push("/");
+          onSuccess: ({ data }: any) => {
+            console.log("data", data?.twoFactorRedirect);
+            if (data?.twoFactorEnabled) {
+              setShowTwoFactor(true);
+              toast.success("Please enter your 2FA code to continue");
+            } else {
+              toast.success("Login successful!");
+              resetForm();
+              // Force a page reload to ensure session is properly set
+              window.location.href = "/";
+            }
           },
-          onError: () => {
-            toast.error("Invalid email or password. Please try again.");
+          onError: ({ error }) => {
+            console.error("Login error:", error.message);
+            toast.error(error.message);
           },
           onSettled: () => {
-            setSubmitting(false);
+            setIsSubmitting(false);
           },
         }
       );
@@ -58,8 +72,19 @@ export default function LoginForm() {
       console.error("Login error:", error);
       toast.error("Invalid email or password. Please try again.");
     } finally {
+      setIsSubmitting(false);
       setSubmitting(false);
     }
+  };
+
+  const handleTwoFactorSuccess = () => {
+    toast.success("Login successful!");
+    // Force a page reload to ensure session is properly set
+    window.location.href = "/";
+  };
+
+  const handleBackToLogin = () => {
+    setShowTwoFactor(false);
   };
 
   const handleSocialLogin = async (provider: SocialProvider) => {
@@ -75,6 +100,17 @@ export default function LoginForm() {
       setSocialLoading(null);
     }
   };
+
+  if (showTwoFactor) {
+    return (
+      <TwoFactorStep
+        onSuccess={handleTwoFactorSuccess}
+        onBack={handleBackToLogin}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -120,14 +156,13 @@ export default function LoginForm() {
                       touched={touched.email}
                     />
                   </div>
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <Input
                       label="Password"
                       id="password"
                       name="password"
-                      type="password"
-                      placeholder="Password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
                       value={values.password}
                       onChange={(e) =>
                         setFieldValue("password", e.target.value)
@@ -135,12 +170,23 @@ export default function LoginForm() {
                       onBlur={() => setFieldTouched("password", true)}
                       className={
                         errors.password && touched.password
-                          ? "border-red-500"
-                          : ""
+                          ? "border-red-500 pr-10"
+                          : "pr-10"
                       }
                       error={errors.password}
                       touched={touched.password}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
 
                   <div className="flex items-center justify-between">

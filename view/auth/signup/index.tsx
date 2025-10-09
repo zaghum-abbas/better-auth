@@ -19,6 +19,7 @@ import { FaGithub } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 const initialValues: SignupFormValues = {
   firstName: "",
@@ -30,6 +31,9 @@ const initialValues: SignupFormValues = {
 };
 
 export default function SignupForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const router = useRouter();
   const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(
     null
@@ -173,13 +177,12 @@ export default function SignupForm() {
                       touched={touched.email}
                     />
                   </div>
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <Input
                       label="Password"
                       id="password"
                       name="password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder={"Password"}
                       value={values.password}
                       onChange={(e) =>
@@ -188,20 +191,30 @@ export default function SignupForm() {
                       onBlur={() => setFieldTouched("password", true)}
                       className={
                         errors.password && touched.password
-                          ? "border-red-500 "
-                          : ""
+                          ? "border-red-500 pr-10"
+                          : "pr-10"
                       }
                       error={errors.password}
                       touched={touched.password}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <Input
                       label="Confirm Password"
                       id="confirmPassword"
                       name="confirmPassword"
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       placeholder={"Confirm Password"}
                       value={values.confirmPassword}
                       onChange={(e) =>
@@ -210,12 +223,25 @@ export default function SignupForm() {
                       onBlur={() => setFieldTouched("confirmPassword", true)}
                       className={
                         errors.confirmPassword && touched.confirmPassword
-                          ? "border-red-500 "
-                          : ""
+                          ? "border-red-500 pr-10"
+                          : "pr-10"
                       }
                       error={errors.confirmPassword}
                       touched={touched.confirmPassword}
                     />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
 
                   <div className="space-y-2">
