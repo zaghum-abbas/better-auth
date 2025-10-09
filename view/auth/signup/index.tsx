@@ -43,48 +43,49 @@ export default function SignupForm() {
     values: SignupFormValues,
     { setSubmitting, resetForm }: any
   ) => {
-    try {
-      await authClient.signUp.email(
-        {
-          email: values.email,
-          name: values.firstName + " " + values.lastName,
-          password: values.password,
+    await authClient.signUp.email(
+      {
+        email: values.email,
+        name: values.firstName + " " + values.lastName,
+        password: values.password,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Account created successfully!");
+          resetForm();
+          router.push("/");
         },
-        {
-          onSuccess: () => {
-            toast.success("Account created successfully!");
-            resetForm();
-            router.push("/");
-          },
-          onError: ({ error }) => {
-            console.error("Signup error:", error.message);
-            toast.error(error.message);
-          },
-          onSettled: () => {
-            setSubmitting(false);
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Signup error:", error);
-      toast.error("An error occurred during signup. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+        onError: ({ error }) => {
+          console.error("Signup error:", error.message);
+          toast.error(error.message);
+        },
+        onSettled: () => {
+          setSubmitting(false);
+        },
+      }
+    );
   };
 
   const handleSocialSignup = async (provider: SocialProvider) => {
     setSocialLoading(provider);
-    try {
-      await authClient.signIn.social({
+
+    await authClient.signIn.social(
+      {
         provider: provider,
-      });
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      toast.error(`${provider} login failed. Please try again.`);
-    } finally {
-      setSocialLoading(null);
-    }
+      },
+      {
+        onSuccess: () => {
+          // Social signup success is handled by redirect
+        },
+        onError: ({ error }) => {
+          console.error(`${provider} signup error:`, error);
+          toast.error(`${provider} signup failed. Please try again.`);
+        },
+        onSettled: () => {
+          setSocialLoading(null);
+        },
+      }
+    );
   };
 
   return (

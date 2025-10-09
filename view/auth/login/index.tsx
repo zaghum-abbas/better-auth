@@ -18,7 +18,7 @@ import { SocialProvider } from "@/types";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import TwoFactorStep from "../TwoFactorStep";
+import TwoFactorStep from "@/components/shared";
 import { Eye, EyeOff } from "lucide-react";
 
 const initialValues: LoginFormValues = {
@@ -40,47 +40,39 @@ export default function LoginForm() {
     { setSubmitting, resetForm }: any
   ) => {
     setIsSubmitting(true);
-    try {
-      await authClient.signIn.email(
-        {
-          email: values.email,
-          password: values.password,
+    await authClient.signIn.email(
+      {
+        email: values.email,
+        password: values.password,
+      },
+      {
+        onSuccess: ({ data }: any) => {
+          console.log("data", data?.twoFactorRedirect);
+          if (data?.twoFactorRedirect) {
+            setShowTwoFactor(true);
+            toast.success("Please enter your 2FA code to continue");
+          } else {
+            toast.success("Login successful!");
+            resetForm();
+            // Force a page reload to ensure session is properly set
+            window.location.href = "/";
+          }
         },
-        {
-          onSuccess: ({ data }: any) => {
-            console.log("data", data?.twoFactorRedirect);
-            if (data?.twoFactorEnabled) {
-              setShowTwoFactor(true);
-              toast.success("Please enter your 2FA code to continue");
-            } else {
-              toast.success("Login successful!");
-              resetForm();
-              // Force a page reload to ensure session is properly set
-              window.location.href = "/";
-            }
-          },
-          onError: ({ error }) => {
-            console.error("Login error:", error.message);
-            toast.error(error.message);
-          },
-          onSettled: () => {
-            setIsSubmitting(false);
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid email or password. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-      setSubmitting(false);
-    }
+        onError: ({ error }) => {
+          console.error("Login error:", error.message);
+          toast.error(error.message);
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+          setSubmitting(false);
+        },
+      }
+    );
   };
 
   const handleTwoFactorSuccess = () => {
     toast.success("Login successful!");
-    // Force a page reload to ensure session is properly set
-    window.location.href = "/";
+    router.push("/");
   };
 
   const handleBackToLogin = () => {
@@ -89,16 +81,24 @@ export default function LoginForm() {
 
   const handleSocialLogin = async (provider: SocialProvider) => {
     setSocialLoading(provider);
-    try {
-      await authClient.signIn.social({
+
+    await authClient.signIn.social(
+      {
         provider: provider,
-      });
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      toast.error(`${provider} login failed. Please try again.`);
-    } finally {
-      setSocialLoading(null);
-    }
+      },
+      {
+        onSuccess: () => {
+          // Social login success is handled by redirect
+        },
+        onError: ({ error }) => {
+          console.error(`${provider} login error:`, error);
+          toast.error(`${provider} login failed. Please try again.`);
+        },
+        onSettled: () => {
+          setSocialLoading(null);
+        },
+      }
+    );
   };
 
   if (showTwoFactor) {
