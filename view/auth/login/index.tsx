@@ -18,6 +18,8 @@ import { SocialProvider } from "@/types";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import TwoFactorStep from "@/components/shared";
+import { Eye, EyeOff } from "lucide-react";
 
 const initialValues: LoginFormValues = {
   email: "",
@@ -25,56 +27,90 @@ const initialValues: LoginFormValues = {
 };
 
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(
     null
   );
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (
     values: LoginFormValues,
     { setSubmitting, resetForm }: any
   ) => {
-    try {
-      await authClient.signIn.email(
-        {
-          email: values.email,
-          password: values.password,
-        },
-        {
-          onSuccess: () => {
+    setIsSubmitting(true);
+    await authClient.signIn.email(
+      {
+        email: values.email,
+        password: values.password,
+      },
+      {
+        onSuccess: ({ data }: any) => {
+          console.log("data", data?.twoFactorRedirect);
+          if (data?.twoFactorRedirect) {
+            setIsSubmitting(false);
+            setShowTwoFactor(true);
+          } else {
             toast.success("Login successful!");
             resetForm();
             router.push("/");
-          },
-          onError: () => {
-            toast.error("Invalid email or password. Please try again.");
-          },
-          onSettled: () => {
-            setSubmitting(false);
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Invalid email or password. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+          }
+        },
+        onError: ({ error }) => {
+          console.error("Login error:", error.message);
+          toast.error(error.message);
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+          setSubmitting(false);
+        },
+      }
+    );
+  };
+
+  const handleTwoFactorSuccess = () => {
+    toast.success("Login successful!");
+    router.push("/");
+  };
+
+  const handleBackToLogin = () => {
+    setShowTwoFactor(false);
+    setIsSubmitting(false);
   };
 
   const handleSocialLogin = async (provider: SocialProvider) => {
     setSocialLoading(provider);
-    try {
-      await authClient.signIn.social({
+
+    await authClient.signIn.social(
+      {
         provider: provider,
-      });
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      toast.error(`${provider} login failed. Please try again.`);
-    } finally {
-      setSocialLoading(null);
-    }
+      },
+      {
+        onSuccess: () => {
+          setSocialLoading(null);
+        },
+        onError: ({ error }) => {
+          console.error(`${provider} login error:`, error);
+          toast.error(`${provider} login failed. Please try again.`);
+        },
+        onSettled: () => {
+          setSocialLoading(null);
+        },
+      }
+    );
   };
+
+  if (showTwoFactor) {
+    return (
+      <TwoFactorStep
+        onSuccess={handleTwoFactorSuccess}
+        onBack={handleBackToLogin}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -120,14 +156,13 @@ export default function LoginForm() {
                       touched={touched.email}
                     />
                   </div>
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <Input
                       label="Password"
                       id="password"
                       name="password"
-                      type="password"
-                      placeholder="Password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
                       value={values.password}
                       onChange={(e) =>
                         setFieldValue("password", e.target.value)
@@ -135,12 +170,23 @@ export default function LoginForm() {
                       onBlur={() => setFieldTouched("password", true)}
                       className={
                         errors.password && touched.password
-                          ? "border-red-500"
-                          : ""
+                          ? "border-red-500 pr-10"
+                          : "pr-10"
                       }
                       error={errors.password}
                       touched={touched.password}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
 
                   <div className="flex items-center justify-between">

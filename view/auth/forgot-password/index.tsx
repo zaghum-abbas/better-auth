@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { ForgotPasswordFormData } from "@/types";
+import { ForgotPasswordFormValues } from "@/lib/validations";
 import { authClient } from "@/lib/auth/auth-client";
 import EmailStep from "./EmailStep";
 import OtpStep from "./OtpStep";
@@ -16,27 +16,27 @@ export default function ForgotPasswordForm() {
   );
   const [userEmail, setUserEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const handleEmailSubmit = async (values: ForgotPasswordFormData) => {
+  const handleEmailSubmit = async (values: ForgotPasswordFormValues) => {
     setIsSubmitting(true);
-    try {
-      const { data, error } = await authClient.forgetPassword.emailOtp({
+
+    await authClient.forgetPassword.emailOtp(
+      {
         email: values.email,
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to send OTP");
-        return;
+      },
+      {
+        onSuccess: () => {
+          setUserEmail(values.email);
+          setStep("otp");
+          toast.success("Verification code sent to your email!");
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Failed to send OTP");
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
       }
-
-      setUserEmail(values.email);
-      setStep("otp");
-      toast.success("Verification code sent to your email!");
-    } catch (error) {
-      console.error("OTP send error:", error);
-      toast.error("Failed to send verification code. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
   const handleVerifyOTP = async () => {
     if (!otp || otp.length !== 6) {
@@ -45,60 +45,52 @@ export default function ForgotPasswordForm() {
     }
 
     setIsSubmitting(true);
-    try {
-      const { data, error } = await authClient.emailOtp.checkVerificationOtp({
+
+    await authClient.emailOtp.checkVerificationOtp(
+      {
         email: userEmail,
         otp: otp,
         type: "forget-password",
-      });
-
-      if (error) {
-        toast.error(error.message || "Invalid verification code");
-        return;
+      },
+      {
+        onSuccess: () => {
+          toast.success("Code verified!");
+          setStep("password");
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Invalid verification code");
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
       }
-      toast.success("Code verified!");
-      setStep("password");
-    } catch (error) {
-      console.error("OTP verification error:", error);
-      toast.error("Failed to verify code. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
   const handlePasswordSubmit = async (values: {
     password: string;
     confirmPassword: string;
   }) => {
     setIsSubmitting(true);
-    try {
-      const { data, error } = await authClient.emailOtp.resetPassword(
-        {
-          email: userEmail,
-          otp: otp,
-          password: values.password,
-        },
-        {
-          onSuccess: () => {
-            setStep("success");
-            toast.success("Password reset successfully!");
-          },
-          onError: ({ error }) => {
-            toast.error(error.message || "Failed to reset password");
-          },
-        }
-      );
 
-      if (error) {
-        toast.error(error.message || "Failed to reset password");
+    await authClient.emailOtp.resetPassword(
+      {
+        email: userEmail,
+        otp: otp,
+        password: values.password,
+      },
+      {
+        onSuccess: () => {
+          setStep("success");
+          toast.success("Password reset successfully!");
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Failed to reset password");
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
       }
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-      toast.error(
-        error.message || "Failed to reset password. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
   const handleResendOTP = () => {
     setStep("email");
