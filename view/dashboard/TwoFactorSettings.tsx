@@ -40,29 +40,28 @@ export default function TwoFactorSettings({
     }
 
     setIsEnabling(true);
-    try {
-      const { data, error }: any = await authClient.twoFactor.enable({
+
+    await authClient.twoFactor.enable(
+      {
         password: password,
         issuer: "Better Auth App",
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to enable 2FA");
-        return;
+      },
+      {
+        onSuccess: ({ data }: any) => {
+          console.log("data", data);
+          setSetupData(data);
+          toast.success(
+            "2FA setup initiated. Please scan the QR code and enter the verification code."
+          );
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Failed to enable 2FA");
+        },
+        onSettled: () => {
+          setIsEnabling(false);
+        },
       }
-
-      console.log("data", data);
-
-      setSetupData(data);
-      toast.success(
-        "2FA setup initiated. Please scan the QR code and enter the verification code."
-      );
-    } catch (error) {
-      console.error("Enable 2FA error:", error);
-      toast.error("Failed to enable 2FA. Please try again.");
-    } finally {
-      setIsEnabling(false);
-    }
+    );
   };
 
   const handleVerify2FA = async () => {
@@ -72,27 +71,27 @@ export default function TwoFactorSettings({
     }
 
     setIsLoading(true);
-    try {
-      const { data, error }: any = await authClient.twoFactor.verifyTotp({
+
+    await authClient.twoFactor.verifyTotp(
+      {
         code: verificationCode,
-      });
-
-      if (error) {
-        toast.error(error.message || "Invalid verification code");
-        return;
+      },
+      {
+        onSuccess: () => {
+          toast.success("2FA enabled successfully!");
+          setSetupData(null);
+          setVerificationCode("");
+          setPassword("");
+          onUpdate();
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Invalid verification code");
+        },
+        onSettled: () => {
+          setIsLoading(false);
+        },
       }
-
-      toast.success("2FA enabled successfully!");
-      setSetupData(null);
-      setVerificationCode("");
-      setPassword("");
-      onUpdate();
-    } catch (error) {
-      console.error("Verify 2FA error:", error);
-      toast.error("Failed to verify 2FA. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   const handleDisable2FA = async () => {
@@ -102,25 +101,25 @@ export default function TwoFactorSettings({
     }
 
     setIsDisabling(true);
-    try {
-      const { data, error } = await authClient.twoFactor.disable({
+
+    await authClient.twoFactor.disable(
+      {
         password: password,
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to disable 2FA");
-        return;
+      },
+      {
+        onSuccess: () => {
+          toast.success("2FA disabled successfully!");
+          setPassword("");
+          onUpdate();
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Failed to disable 2FA");
+        },
+        onSettled: () => {
+          setIsDisabling(false);
+        },
       }
-
-      toast.success("2FA disabled successfully!");
-      setPassword("");
-      onUpdate();
-    } catch (error) {
-      console.error("Disable 2FA error:", error);
-      toast.error("Failed to disable 2FA. Please try again.");
-    } finally {
-      setIsDisabling(false);
-    }
+    );
   };
 
   console.log("setupData", setupData?.totpURI);

@@ -10,20 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
 import toast from "react-hot-toast";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { TwoFactorFormData } from "@/types";
-import * as yup from "yup";
 import { authClient } from "@/lib/auth/auth-client";
-
-const twoFactorSchema = yup.object({
-  code: yup
-    .string()
-    .required("Verification code is required")
-    .length(6, "Code must be 6 digits")
-    .matches(/^\d+$/, "Code must contain only numbers"),
-});
+import {
+  twoFactorValidationSchema,
+  TwoFactorFormValues,
+} from "@/lib/validations";
 
 const initialValues: TwoFactorFormData = {
   code: "",
@@ -42,28 +36,26 @@ export default function TwoFactorStep({
   isSubmitting,
   setIsSubmitting,
 }: TwoFactorStepProps) {
-  const [code, setCode] = useState("");
-
-  const handleSubmit = async (values: TwoFactorFormData) => {
+  const handleSubmit = async (values: TwoFactorFormValues) => {
     setIsSubmitting(true);
-    try {
-      const { data, error } = await authClient.twoFactor.verify({
+
+    await authClient.twoFactor.verifyTotp(
+      {
         code: values.code,
-      });
-
-      if (error) {
-        toast.error(error.message || "Invalid verification code");
-        return;
+      },
+      {
+        onSuccess: () => {
+          toast.success("Two-factor authentication successful!");
+          onSuccess();
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Invalid verification code");
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
       }
-
-      toast.success("Two-factor authentication successful!");
-      onSuccess();
-    } catch (error) {
-      console.error("2FA verification error:", error);
-      toast.error("Failed to verify code. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   return (
@@ -84,7 +76,7 @@ export default function TwoFactorStep({
           <CardContent>
             <Formik
               initialValues={initialValues}
-              validationSchema={twoFactorSchema}
+              validationSchema={twoFactorValidationSchema}
               onSubmit={handleSubmit}
             >
               {({
@@ -108,7 +100,6 @@ export default function TwoFactorStep({
                           .replace(/\D/g, "")
                           .slice(0, 6);
                         setFieldValue("code", value);
-                        setCode(value);
                       }}
                       maxLength={6}
                       className="text-center text-2xl font-bold tracking-widest"

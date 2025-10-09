@@ -11,24 +11,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-import { ForgotPasswordFormData } from "@/types";
-import * as yup from "yup";
 import { useRouter } from "next/navigation";
+import {
+  forgotPasswordValidationSchema,
+  ForgotPasswordFormValues,
+} from "@/lib/validations";
 
-const forgotPasswordSchema = yup.object({
-  email: yup
-    .string()
-    .required("Email is required")
-    .email("Please enter a valid email address")
-    .max(100, "Email must be less than 100 characters"),
-});
-
-const initialValues: ForgotPasswordFormData = {
+const initialValues: ForgotPasswordFormValues = {
   email: "",
 };
 
 interface EmailStepProps {
-  onSubmit: (values: ForgotPasswordFormData) => void;
+  onSubmit: (values: ForgotPasswordFormValues) => void;
   isSubmitting: boolean;
 }
 
@@ -50,7 +44,7 @@ export default function EmailStep({ onSubmit, isSubmitting }: EmailStepProps) {
           <CardContent>
             <Formik
               initialValues={initialValues}
-              validationSchema={forgotPasswordSchema}
+              validationSchema={forgotPasswordValidationSchema}
               onSubmit={onSubmit}
             >
               {({
