@@ -5,6 +5,7 @@ export interface UserType {
   image?: string | null;
   emailVerified?: boolean;
   twoFactorEnabled?: boolean | null;
+  stripeCustomerId?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
