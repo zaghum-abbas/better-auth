@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/auth-client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/hooks/useAuth";
 import {
   Card,
   CardContent,
@@ -26,44 +26,33 @@ import {
 import { UserType } from "@/types";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import TwoFactorSettings from "./TwoFactorSettings";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { user, loading, logout, refreshSession } = useAuth();
+  const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const session = await authClient.getSession();
-        if (session?.data?.user) {
-          setUser(session.data.user);
-        } else {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [loading, user, router]);
 
   const handleLogout = async () => {
     setLogoutLoading(true);
     try {
-      await authClient.signOut();
-      router.push("/login");
+      await logout();
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed. Please try again.");
     } finally {
       setLogoutLoading(false);
     }
+  };
+
+  const refreshUser = async () => {
+    await refreshSession();
   };
 
   if (loading) {
@@ -270,7 +259,10 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* User Info Card */}
+        <div className="mt-6">
+          <TwoFactorSettings user={user} onUpdate={refreshUser} />
+        </div>
+
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Account Information</CardTitle>
@@ -300,9 +292,15 @@ export default function Dashboard() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">
-                  Member Since
+                  Two-Factor Auth
                 </label>
-                <p className="text-sm text-gray-900">Today</p>
+                <p className="text-sm text-gray-900">
+                  {user.twoFactorEnabled ? (
+                    <span className="text-green-600 font-medium">Enabled</span>
+                  ) : (
+                    <span className="text-gray-500">Disabled</span>
+                  )}
+                </p>
               </div>
             </div>
           </CardContent>

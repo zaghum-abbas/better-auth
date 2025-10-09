@@ -12,23 +12,10 @@ import {
 } from "@/components/ui/card";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import * as yup from "yup";
-
-const resetPasswordSchema = yup.object({
-  password: yup
-    .string()
-    .required("Password is required")
-    .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must be less than 100 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-    ),
-  confirmPassword: yup
-    .string()
-    .required("Please confirm your password")
-    .oneOf([yup.ref("password")], "Passwords must match"),
-});
+import {
+  resetPasswordValidationSchema,
+  ResetPasswordFormValues,
+} from "@/lib/validations";
 
 interface PasswordStepProps {
   onSubmit: (values: { password: string; confirmPassword: string }) => void;
@@ -59,7 +46,7 @@ export default function PasswordStep({
           <CardContent>
             <Formik
               initialValues={{ password: "", confirmPassword: "" }}
-              validationSchema={resetPasswordSchema}
+              validationSchema={resetPasswordValidationSchema}
               onSubmit={onSubmit}
             >
               {({

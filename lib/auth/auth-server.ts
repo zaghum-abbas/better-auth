@@ -17,9 +17,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  appName: "better-auth",
   secret: process.env.NEXT_BETTER_AUTH_SECRET as string,
   trustedOrigins: ["*"],
   baseURL: "http://localhost:3001",
+  session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5,
+    },
+  },
   socialProviders: {
     github: {
       clientId: process.env.NEXT_GITHUB_CLIENT_ID as string,

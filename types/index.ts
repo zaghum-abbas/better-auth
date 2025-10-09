@@ -4,6 +4,7 @@ export interface UserType {
   name?: string;
   image?: string | null;
   emailVerified?: boolean;
+  twoFactorEnabled?: boolean | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -48,4 +49,14 @@ export interface ResetPasswordFormData {
   password: string;
   confirmPassword: string;
   token: string;
+}
+
+export interface TwoFactorFormData {
+  code: string;
+}
+
+export interface TwoFactorSetupData {
+  totpURI: string;
+  secret: string;
+  backupCodes: string[];
 }
