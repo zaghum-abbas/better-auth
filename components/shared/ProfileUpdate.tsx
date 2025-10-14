@@ -18,6 +18,7 @@ import { authClient } from "@/lib/auth/auth-client";
 import Image from "next/image";
 import * as yup from "yup";
 import { profileUpdateValidationSchema } from "@/lib/validations";
+import { useRouter } from "next/navigation";
 
 interface ProfileUpdateProps {
   user: UserType;
@@ -30,6 +31,7 @@ export default function ProfileUpdate({
   onClose,
   onUpdate,
 }: ProfileUpdateProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<"profile" | "billing">("profile");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,26 +113,8 @@ export default function ProfileUpdate({
     }
   };
 
-  const handleStripePortal = async () => {
-    try {
-      // Create Stripe customer portal session
-      const response = await fetch("/api/stripe/create-portal-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create portal session");
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      console.error("Stripe portal error:", error);
-      toast.error("Failed to open billing portal");
-    }
+  const handleViewPlans = () => {
+    router.push("/plans");
   };
 
   return (
@@ -151,7 +135,7 @@ export default function ProfileUpdate({
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Tab Navigation */}
+          {" "}
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
             <Button
               variant={activeTab === "profile" ? "default" : "ghost"}
@@ -172,21 +156,21 @@ export default function ProfileUpdate({
               Billing
             </Button>
           </div>
-
-          {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="space-y-6">
               {/* Profile Image */}
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative">
                   {user.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user.name || "Profile"}
-                      width={100}
-                      height={100}
-                      className="rounded-full object-cover"
-                    />
+                    <div className="relative w-24 h-24">
+                      <Image
+                        src={user.image}
+                        alt={user.name || "Profile"}
+                        fill
+                        className="rounded-full object-cover"
+                        sizes="96px"
+                      />
+                    </div>
                   ) : (
                     <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
                       <User className="h-8 w-8 text-gray-400" />
@@ -271,7 +255,6 @@ export default function ProfileUpdate({
               </Formik>
             </div>
           )}
-
           {/* Billing Tab */}
           {activeTab === "billing" && (
             <div className="space-y-6">
@@ -280,16 +263,45 @@ export default function ProfileUpdate({
                   <CreditCard className="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Manage Billing</h3>
+                  <h3 className="text-lg font-semibold">Subscription Plans</h3>
                   <p className="text-gray-500">
-                    Update your payment methods, view invoices, and manage your
-                    subscription
+                    Choose the perfect plan for your needs. Upgrade or downgrade
+                    at any time.
                   </p>
                 </div>
-                <Button onClick={handleStripePortal} className="w-full">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Open Billing Portal
-                </Button>
+                <div className="space-y-3">
+                  <Button onClick={handleViewPlans} className="w-full">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    View Plans & Pricing
+                  </Button>
+                  {/* <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(
+                          "/api/stripe/create-portal-session",
+                          {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                          }
+                        );
+
+                        if (!response.ok) {
+                          throw new Error("Failed to create portal session");
+                        }
+
+                        const { url } = await response.json();
+                        window.location.href = url;
+                      } catch (error) {
+                        toast.error("Failed to open billing portal");
+                      }
+                    }}
+                    className="w-full"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Billing
+                  </Button> */}
+                </div>
               </div>
             </div>
           )}

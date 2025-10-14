@@ -27,10 +27,12 @@ export default function ForgotPasswordForm() {
         onSuccess: () => {
           setUserEmail(values.email);
           setStep("otp");
+          setIsSubmitting(false);
           toast.success("Verification code sent to your email!");
         },
         onError: ({ error }) => {
           toast.error(error.message || "Failed to send OTP");
+          setIsSubmitting(false);
         },
         onSettled: () => {
           setIsSubmitting(false);
@@ -56,6 +58,7 @@ export default function ForgotPasswordForm() {
         onSuccess: () => {
           toast.success("Code verified!");
           setStep("password");
+          setIsSubmitting(false);
         },
         onError: ({ error }) => {
           toast.error(error.message || "Invalid verification code");

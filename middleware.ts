@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
 
     const isLoggedIn = !!session?.session;
     const authRoutes = ["/login", "/signup", "/forgot-password"];
-    const protectedRoutes = ["/dashboard", "/profile", "/settings"];
+    const protectedRoutes = ["/dashboard", "/profile", "/settings", "/plans"];
 
     if (isLoggedIn && authRoutes.some((route) => pathname.startsWith(route))) {
       return NextResponse.redirect(new URL("/", request.url));
@@ -39,5 +39,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   runtime: "nodejs",
-  matcher: ["/login", "/signup", "/forgot-password", "/dashboard/:path*"],
+  matcher: [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/dashboard/:path*",
+    "/plans",
+  ],
 };

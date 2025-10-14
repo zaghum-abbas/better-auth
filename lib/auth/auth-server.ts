@@ -4,9 +4,13 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { emailOTP, twoFactor } from "better-auth/plugins";
 import { Resend } from "resend";
+import Stripe from "stripe";
+import { stripe } from "@better-auth/stripe";
 
 const resend = new Resend(process.env.NEXT_RESEND_API_KEY);
-
+const stripeClient = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-08-27.basil",
+});
 const client = new MongoClient(process.env.NEXT_DB_URI as string);
 const db = client.db();
 
@@ -42,6 +46,38 @@ export const auth = betterAuth({
   plugins: [
     nextCookies(),
     twoFactor(),
+    stripe({
+      stripeClient,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+      subscription: {
+        enabled: true,
+        plans: async () => {
+          try {
+            const products = await stripeClient.products.list({
+              active: true,
+              limit: 100,
+            });
+            const prices = await stripeClient.prices.list({
+              active: true,
+              limit: 100,
+            });
+            const plans = products.data.map((product) => {
+              return {
+                ...product,
+                prices: prices.data.filter(
+                  (price) => price.product === product.id
+                ),
+              };
+            });
+            return plans;
+          } catch (error) {
+            console.error("❌ Stripe plans error:", error);
+            return [];
+          }
+        },
+      },
+    }),
     emailOTP({
       generateOTP: () => {
         return Math.floor(100000 + Math.random() * 900000).toString();

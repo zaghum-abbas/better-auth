@@ -110,21 +110,21 @@ export default function Dashboard() {
                 </Button>
                 <button
                   onClick={handleProfileUpdate}
-                  className="flex items-center space-x-2 hrounded-lg p-1 transition-colors"
+                  className="flex items-center space-x-2 hrounded-lg p-1 transition-colors cursor-pointer"
                 >
                   {user?.image ? (
-                    <div className="relative w-8 h-8">
+                    <div className="relative w-9 h-9">
                       <Image
                         src={user?.image ?? ""}
                         alt={user?.name ?? ""}
                         fill
                         priority={true}
                         className="rounded-full object-cover"
-                        sizes="32px"
+                        sizes="36px"
                       />
                     </div>
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
                       <User className="h-4 w-4 text-white" />
                     </div>
                   )}
@@ -149,9 +149,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900">
               Welcome back, {user.name || user.email.split("@")[0]}!
@@ -161,7 +159,6 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -220,9 +217,7 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Activity */}
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -261,7 +256,6 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
             <Card>
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
