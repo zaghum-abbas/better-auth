@@ -38,9 +38,7 @@ export default function TwoFactorSettings({
       toast.error("Please enter your password to enable 2FA");
       return;
     }
-
     setIsEnabling(true);
-
     await authClient.twoFactor.enable(
       {
         password: password,
@@ -99,9 +97,7 @@ export default function TwoFactorSettings({
       toast.error("Please enter your password to disable 2FA");
       return;
     }
-
     setIsDisabling(true);
-
     await authClient.twoFactor.disable(
       {
         password: password,
@@ -121,8 +117,6 @@ export default function TwoFactorSettings({
       }
     );
   };
-
-  console.log("setupData", setupData?.totpURI);
 
   if (setupData) {
     return (

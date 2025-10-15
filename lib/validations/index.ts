@@ -108,3 +108,22 @@ export type ResetPasswordFormValues = {
   password: string;
   confirmPassword: string;
 };
+
+// Profile Update Schema
+export const profileUpdateValidationSchema = yup.object({
+  name: yup
+    .string()
+    .required("Name is required")
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters")
+    .matches(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
+  email: yup
+    .string()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+});
+
+export type ProfileUpdateFormValues = {
+  name: string;
+  email: string;
+};
