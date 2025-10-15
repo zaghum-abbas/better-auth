@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useRef } from "react";
 import { Formik, Form } from "formik";
 import { Button } from "@/components/ui/button";
@@ -11,12 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { X, Camera, User, CreditCard, Settings } from "lucide-react";
+import { X, Camera, User, CreditCard } from "lucide-react";
 import { UserType } from "@/types";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth/auth-client";
 import Image from "next/image";
-import * as yup from "yup";
+// import * as yup from "yup";
 import { profileUpdateValidationSchema } from "@/lib/validations";
 import { useRouter } from "next/navigation";
 

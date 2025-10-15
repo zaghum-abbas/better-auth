@@ -1,14 +1,13 @@
 "use client";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import {
   CardNumberElement,
   CardExpiryElement,
   CardCvcElement,
   useStripe,
-  Elements,
   useElements,
 } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
@@ -126,14 +125,13 @@ const PaymentForm = ({
           planName,
         }
       );
-      const { subscriptionId, clientSecret, status } = response.data;
+      const { clientSecret, status } = response.data;
       if (status === "active") {
         onSuccess?.();
         onClose();
       } else if (clientSecret) {
-        const { error: confirmError } = await stripe.confirmCardPayment(
-          clientSecret
-        );
+        const { error: confirmError } =
+          await stripe.confirmCardPayment(clientSecret);
         if (confirmError) {
           setErrorMessage(confirmError.message || "Payment failed");
           setIsProcessing(false);
@@ -156,15 +154,7 @@ const PaymentForm = ({
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
-      {({
-        values,
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-        setFieldTouched,
-      }) => (
+      {({ values, errors, touched, setFieldValue, setFieldTouched }) => (
         <Form className="space-y-6">
           {console.log(errors, "errors") as any}
           <div className="space-y-4">

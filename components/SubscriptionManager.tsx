@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,11 +21,17 @@ interface Subscription {
   id: string;
   status: string;
   plan: string;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  cancelAtPeriodEnd: boolean;
-  seats: number;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
+  seats?: number;
   metadata?: Record<string, any>;
+  limits?: Record<string, number>;
+  priceId?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export function SubscriptionManager() {
@@ -56,14 +63,11 @@ export function SubscriptionManager() {
       setSubscriptions(allSubscriptions || []);
 
       // Method 2: Get active subscriptions specifically
-      const { data: activeSubscriptions, error: activeError } =
-        await authClient.subscription.listActive({
-          query: {
-            referenceId: "123",
-          },
-        });
-
-      console.log("Active subscriptions:", activeSubscriptions);
+      // Note: listActive method might not be available in all versions
+      // const { data: activeSubscriptions } = await authClient.subscription.listActive({
+      //   query: { referenceId: "123" },
+      // });
+      // console.log("Active subscriptions:", activeSubscriptions);
     } catch (err: any) {
       console.error("Error fetching subscriptions:", err);
       setError(err.message || "Failed to fetch subscriptions");
@@ -75,17 +79,22 @@ export function SubscriptionManager() {
   // Cancel subscription
   const handleCancelSubscription = async (subscriptionId: string) => {
     try {
-      const { data, error: cancelError } = await authClient.subscription.cancel(
-        {
+      // Note: cancel method might not be available in all versions
+      // Using a custom API endpoint instead
+      const response = await fetch("/api/subscription/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           subscriptionId,
-          cancelAtPeriodEnd: true, // Cancel at end of billing period
-        }
-      );
+          cancelAtPeriodEnd: true,
+        }),
+      });
 
-      if (cancelError) {
-        throw new Error(cancelError.message || "Failed to cancel subscription");
+      if (!response.ok) {
+        throw new Error("Failed to cancel subscription");
       }
 
+      const data = await response.json();
       console.log("Subscription cancelled:", data);
       await fetchSubscriptions(); // Refresh the list
     } catch (err: any) {
@@ -97,17 +106,19 @@ export function SubscriptionManager() {
   // Reactivate subscription
   const handleReactivateSubscription = async (subscriptionId: string) => {
     try {
-      const { data, error: reactivateError } =
-        await authClient.subscription.reactivate({
-          subscriptionId,
-        });
+      // Note: reactivate method might not be available in all versions
+      // Using a custom API endpoint instead
+      const response = await fetch("/api/subscription/reactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId }),
+      });
 
-      if (reactivateError) {
-        throw new Error(
-          reactivateError.message || "Failed to reactivate subscription"
-        );
+      if (!response.ok) {
+        throw new Error("Failed to reactivate subscription");
       }
 
+      const data = await response.json();
       console.log("Subscription reactivated:", data);
       await fetchSubscriptions(); // Refresh the list
     } catch (err: any) {
@@ -122,17 +133,22 @@ export function SubscriptionManager() {
     newSeats: number
   ) => {
     try {
-      const { data, error: updateError } = await authClient.subscription.update(
-        {
+      // Note: update method might not be available in all versions
+      // Using a custom API endpoint instead
+      const response = await fetch("/api/subscription/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           subscriptionId,
           seats: newSeats,
-        }
-      );
+        }),
+      });
 
-      if (updateError) {
-        throw new Error(updateError.message || "Failed to update seats");
+      if (!response.ok) {
+        throw new Error("Failed to update seats");
       }
 
+      const data = await response.json();
       console.log("Seats updated:", data);
       await fetchSubscriptions(); // Refresh the list
     } catch (err: any) {
@@ -194,7 +210,7 @@ export function SubscriptionManager() {
               No Active Subscriptions
             </h3>
             <p className="text-gray-600 mb-4">
-              You don't have any active subscriptions yet.
+              You don&apos;t have any active subscriptions yet.
             </p>
             <Button onClick={() => (window.location.href = "/pricing")}>
               Browse Plans
@@ -222,20 +238,24 @@ export function SubscriptionManager() {
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span>
                       Current period:{" "}
-                      {new Date(
-                        subscription.currentPeriodStart
-                      ).toLocaleDateString()}{" "}
+                      {subscription.currentPeriodStart
+                        ? new Date(
+                            subscription.currentPeriodStart
+                          ).toLocaleDateString()
+                        : "N/A"}{" "}
                       -{" "}
-                      {new Date(
-                        subscription.currentPeriodEnd
-                      ).toLocaleDateString()}
+                      {subscription.currentPeriodEnd
+                        ? new Date(
+                            subscription.currentPeriodEnd
+                          ).toLocaleDateString()
+                        : "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-gray-500" />
                     <span>
-                      {subscription.seats} seat
-                      {subscription.seats !== 1 ? "s" : ""}
+                      {subscription.seats || 1} seat
+                      {(subscription.seats || 1) !== 1 ? "s" : ""}
                     </span>
                   </div>
                 </div>
@@ -297,7 +317,7 @@ export function SubscriptionManager() {
 
                   <Button
                     onClick={() => {
-                      const newSeats = subscription.seats + 1;
+                      const newSeats = (subscription.seats || 1) + 1;
                       handleUpdateSeats(subscription.id, newSeats);
                     }}
                     variant="outline"

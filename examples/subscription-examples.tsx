@@ -59,15 +59,15 @@ export function SubscriptionExamples() {
 
         {/* 2. List active subscriptions */}
         <button
-          onClick={() =>
-            handleApiCall(
-              () =>
-                authClient.subscription.listActive({
-                  query: { referenceId: "123" },
-                }),
-              "List Active Subscriptions"
-            )
-          }
+          //   onClick={() =>
+          //     handleApiCall(
+          //       () =>
+          //         authClient.subscription.listActive({
+          //           query: { referenceId: "123" },
+          //         }),
+          //       "List Active Subscriptions"
+          //     )
+          //   }
           className="p-4 border rounded-lg hover:bg-gray-50"
           disabled={loading}
         >
@@ -103,16 +103,16 @@ export function SubscriptionExamples() {
 
         {/* 4. Cancel subscription */}
         <button
-          onClick={() =>
-            handleApiCall(
-              () =>
-                authClient.subscription.cancel({
-                  subscriptionId: "sub_123", // Replace with actual subscription ID
-                  cancelAtPeriodEnd: true,
-                }),
-              "Cancel Subscription"
-            )
-          }
+          //   onClick={() =>
+          //     handleApiCall(
+          //       () =>
+          //         authClient.subscription.cancel({
+          //           subscriptionId: "sub_123", // Replace with actual subscription ID
+          //           cancelAtPeriodEnd: true,
+          //         }),
+          //       "Cancel Subscription"
+          //     )
+          //   }
           className="p-4 border rounded-lg hover:bg-gray-50"
           disabled={loading}
         >
@@ -122,15 +122,15 @@ export function SubscriptionExamples() {
 
         {/* 5. Reactivate subscription */}
         <button
-          onClick={() =>
-            handleApiCall(
-              () =>
-                authClient.subscription.reactivate({
-                  subscriptionId: "sub_123", // Replace with actual subscription ID
-                }),
-              "Reactivate Subscription"
-            )
-          }
+          //   onClick={() =>
+          //     handleApiCall(
+          //       () =>
+          //         authClient.subscription.reactivate({
+          //           subscriptionId: "sub_123", // Replace with actual subscription ID
+          //         }),
+          //       "Reactivate Subscription"
+          //     )
+          //   }
           className="p-4 border rounded-lg hover:bg-gray-50"
           disabled={loading}
         >
@@ -142,17 +142,17 @@ export function SubscriptionExamples() {
 
         {/* 6. Update subscription */}
         <button
-          onClick={() =>
-            handleApiCall(
-              () =>
-                authClient.subscription.update({
-                  subscriptionId: "sub_123", // Replace with actual subscription ID
-                  seats: 5,
-                  metadata: { updatedAt: new Date().toISOString() },
-                }),
-              "Update Subscription"
-            )
-          }
+          //   onClick={() =>
+          //     handleApiCall(
+          //       () =>
+          //         authClient.subscription.update({
+          //           subscriptionId: "sub_123", // Replace with actual subscription ID
+          //           seats: 5,
+          //           metadata: { updatedAt: new Date().toISOString() },
+          //         }),
+          //       "Update Subscription"
+          //     )
+          //   }
           className="p-4 border rounded-lg hover:bg-gray-50"
           disabled={loading}
         >

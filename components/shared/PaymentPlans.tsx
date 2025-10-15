@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,9 +78,9 @@ const plans = [
 ];
 
 export default function PaymentPlans({
-  user,
+  user: _user,
   onClose,
-  onSelectPlan,
+  onSelectPlan: _onSelectPlan,
 }: PaymentPlansProps) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
