@@ -64,8 +64,9 @@ export const useEmail = (): UseEmailReturn => {
       } else {
         throw new Error(result.error || "Failed to send email");
       }
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to send email";
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to send email";
       setError(errorMessage);
       toast.error(errorMessage);
       return false;

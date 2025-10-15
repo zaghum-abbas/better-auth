@@ -22,7 +22,7 @@ interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
   children: ReactNode;
   className?: string;
   color?: Color;
-  font?: string;
+  // font?: string;
 }
 
 export const Typography: React.FC<TypographyProps> = ({
@@ -30,7 +30,7 @@ export const Typography: React.FC<TypographyProps> = ({
   children,
   color = "primary",
   className = "",
-  font,
+  // font,
   ...props
 }) => {
   const variantMapping: Record<

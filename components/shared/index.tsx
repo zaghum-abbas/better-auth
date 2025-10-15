@@ -82,13 +82,7 @@ export default function TwoFactorStep({
               validationSchema={twoFactorValidationSchema}
               onSubmit={handleSubmit}
             >
-              {({
-                values,
-                errors,
-                touched,
-                setFieldValue,
-                setFieldTouched,
-              }) => (
+              {({ values, errors, touched, setFieldValue }) => (
                 <Form className="space-y-4">
                   <div className="space-y-2">
                     <Input

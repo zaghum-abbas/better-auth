@@ -5,9 +5,14 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { emailOTP, twoFactor } from "better-auth/plugins";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.NEXT_RESEND_API_KEY);
+const resend = new Resend("re_Qiszywor_M8hZ2cLGbWKiqKv6Z31MsgkL");
 
-const client = new MongoClient(process.env.NEXT_DB_URI as string);
+console.log("resend", resend);
+
+const client = new MongoClient(
+  "mongodb+srv://zaghumabbas524_db_user:zaghumabbas123@cluster0.lasguxc.mongodb.net/better-auth"
+);
+
 const db = client.db();
 
 export const auth = betterAuth({
@@ -20,7 +25,7 @@ export const auth = betterAuth({
   appName: "better-auth",
   secret: process.env.NEXT_BETTER_AUTH_SECRET as string,
   trustedOrigins: ["*"],
-  baseURL: "http://localhost:3001",
+  baseURL: "http://localhost:3000",
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
@@ -47,6 +52,14 @@ export const auth = betterAuth({
         return Math.floor(100000 + Math.random() * 900000).toString();
       },
       async sendVerificationOTP({ email, otp, type }) {
+        // Check if Resend is available
+        if (!resend) {
+          console.error("❌ Resend is not configured. Cannot send email.");
+          throw new Error(
+            "Email service is not configured. Please contact support."
+          );
+        }
+
         let subject = "";
         let htmlContent = "";
 
@@ -66,8 +79,15 @@ export const auth = betterAuth({
         }
 
         try {
+          const fromEmail = process.env.NEXT_RESEND_FROM_EMAIL;
+          if (!fromEmail) {
+            throw new Error(
+              "NEXT_RESEND_FROM_EMAIL environment variable is not set"
+            );
+          }
+
           const { data, error } = await resend.emails.send({
-            from: process.env.NEXT_RESEND_FROM_EMAIL as string,
+            from: fromEmail,
             to: [email],
             subject: subject,
             html: htmlContent,
@@ -78,9 +98,9 @@ export const auth = betterAuth({
             throw new Error(`Failed to send email: ${error.message}`);
           }
 
-          console.log(`OTP email sent to ${email} for ${type}`, data);
+          console.log(`✅ OTP email sent to ${email} for ${type}`, data);
         } catch (error) {
-          console.error("Error sending email:", error);
+          console.error("❌ Error sending email:", error);
           throw error;
         }
       },
